@@ -1,69 +1,56 @@
 library(shinydashboard)
-
+####################################
+#Auther: Harvey Imama
+#Client code for fets fraud detection project
+#NYC data science academy project
+######################################
 shinyUI(
     dashboardPage( 
-        dashboardHeader(title = "FraudDetectionDashBoard"), 
+        dashboardHeader(title = "FraudDashBoard"), 
         dashboardSidebar(
             sidebarUserPanel("Dashboard", image = 'https://online.nycdatascience.com/assets/icons/nycdsa-logo-horizonal.png'), 
             sidebarMenu(
                 menuItem("Home", tabName = "home", icon = icon("home")),
-                menuItem("Flagged Transactions", tabName = "flaggedTransactions", icon = icon("database")),
-                menuItem("Trend", tabName = "trend", icon = icon("database")),
+                menuItem("Fraud Analysis", tabName = "analysis", icon = icon("database"))
             )
         ), 
         dashboardBody(
+           
             tabItems(
-                
                 tabItem(
                     tabName = "home",
                     fluidRow(
-                        box(dateRangeInput('dateRange',
-                                           label = 'Date range input: yyyy-mm-dd',
-                                           start = Sys.Date() - 2, end = Sys.Date() + 2)
-                        )
-                    ),
+                        infoBoxOutput('requestsVol'),
+                        infoBoxOutput('flaggedVol'),
+                        infoBoxOutput('percentageVol')
+                        ),
                     fluidRow(
-                        box(ValueBoxOutput('requestsToday')),
-                        box(ValueBoxOutput('flaggedToday')),
-                        box(ValueBoxOutput('percentageToday'))),
+                        infoBoxOutput('requestsVal'),
+                        infoBoxOutput('flaggedVal'),
+                        infoBoxOutput('percentageVal')),
                     fluidRow(
-                        box(ValueBoxOutput('requestsAll')),
-                        box(ValueBoxOutput('flaggedAll')),
-                        box(ValueBoxOutput('percentageAll')))
+                        box( plotOutput('totalVolumes') ,width=6) ,
+                        box( plotOutput('totalValues') ,width=6) 
+                    )
                 ),
                 tabItem(
-                    tabName = "flaggedTransactions",
+                    tabName = "analysis",
                     fluidRow(
                         box(selectizeInput(inputId = "type",
                                            label = "feature",
                                            choices = c('Channel'='channel','Day'='day','Week'='week'
                                                        ,'Tier'='tier','Customer Type'='cType',
-                                                       'BVN Status'='bvn') ),
-                            dateRangeInput('dateRange',
-                                           label = 'Date range input: yyyy-mm-dd',
-                                           start = Sys.Date() - 2, end = Sys.Date() + 2)
+                                                       'BVN Status'='bvn') )
                             
                             )
                     ),
                     fluidRow(
-                        box(plotOutput('typePlotValue'),width=12) ,
-                        box(plotOutput('typePlotVolume'),width=12) 
-                    )
-                ),
-                tabItem(
-                    tabName = "trend",
-                    fluidRow(
-                        box(
-                            dateRangeInput('dateRange',
-                                           label = 'Date range input: yyyy-mm-dd',
-                                           start = Sys.Date() - 2, end = Sys.Date() + 2)
-                        )
-                    ),
-                    fluidRow(
-                        box(plotOutput('trendValue'),width=12)  
-                    ),
-                    fluidRow(
-                        box(plotOutput('trendVolume'),width=12) 
+                        box(plotOutput('allPlotValue'),width=6) ,
+                        box(plotOutput('allPlotVolume'),width=6) ,
+                        box(plotOutput('fraudPlotValue'),width=6) ,
+                        box(plotOutput('fraudPlotVolume'),width=6) ,
+                        box(plotOutput('nofraudPlotValue'),width=6) ,
+                        box(plotOutput('nofraudPlotVolume'),width=6) ,
                     )
                 )
             ))

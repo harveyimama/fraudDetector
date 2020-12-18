@@ -17,14 +17,20 @@ import threading
 
 class MyWebService(object):
     
+    TRANSACTION = "transaction"
+    
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     def process(self):
         data = cherrypy.request.json
-        df = pd.DataFrame(data)
+        
+        df = pd.DataFrame(data=data)
         outcome = testService.Tester().predictOutcome(df) 
-        if outcome == True:
+        probs = testService.Tester().getProbablity(df)
+        print(probs)
+        
+        if outcome == 'T':
             x = threading.Thread(target=self.__sendMessage__, args=(df,)) 
             x.start()
         df = self. __saveOutcome_(df,outcome)
@@ -32,7 +38,7 @@ class MyWebService(object):
         return df.to_json()
             
     def __saveOutcome_(self,data,outcome):
-        data.isflagged = outcome
+        data.is_flagged = outcome
         conn.Connect().save(self.TRANSACTION,data)
         return data
         

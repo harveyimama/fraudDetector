@@ -9,7 +9,7 @@ from webService import ws
 class WSProcessor: 
         
     def __init__ (self):        
-       config = {'server.socket_host': '0.0.0.0'}
+       config = {'server.socket_host': '0.0.0.0','server.socket_port':8877}
        cherrypy.config.update(config)
        cherrypy.quickstart(ws.MyWebService())  
         

@@ -8,22 +8,22 @@ from sqlalchemy import create_engine
 import pymysql
 import pandas as pd
 
-class Connect(object):
+class Connect():
     '''
     classdocs
     '''
 
 
-    def __init__(self, params):
+    def __init__(self):
         '''
         Constructor
         '''
-        self.sqlEngine       = create_engine('mysql+pymysql://root:@127.0.0.1', pool_recycle=3600)
-        self.dbConnection    = self.sqlEngine.connect()
+        self.sqlEngine  = create_engine('mysql+pymysql://root:1W2w1s500.@127.0.0.1/aml', pool_recycle=3600)
+        self.dbConnection = self.sqlEngine.connect()
         
         
     def closeConnect(self):
-        self.dbConnection.Close()
+        self.dbConnection.close()
         
     def find (self,table,params):
         paramsString = ""    
@@ -33,9 +33,10 @@ class Connect(object):
                     paramsString=param[0]+" = "+param[1]
                 else:
                     paramsString=paramsString+" and "+param[0]+" = "+param[1]
-                 
-        return pd.read_sql("select * from "+table+" where "+paramsString, self.dbConnection)
-  
+        if params != None:         
+            return pd.read_sql("select * from "+table+" where "+paramsString, self.dbConnection)
+        else:
+            return pd.read_sql("select * from "+table+" ", self.dbConnection) 
      
     def save (self,table,params):  
-        params.to_sql(table, self.dbConnection, if_exists='fail')
+        params.to_sql(table, self.dbConnection, if_exists='append')

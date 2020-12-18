@@ -1,99 +1,310 @@
 library(shiny)
-
+####################################
+#Auther: Harvey Imama
+#Server code for fets fraud detection project
+#NYC data science academy project
+######################################
 shinyServer(function(input, output) {
     
-    get.today.data <- reactive(
-      filter(transaction.data,crt_dt > input$dateRange$start[1] & crt_dt < input$dateRange[2] )
-    )
     
-    get.today.flagged.data <- reactive(
-        filter(transaction.data,crt_dt > input$dateRange$start[1] & crt_dt < input$dateRange[2] 
-               & flagged == T )
-    )
-    
-    get.count.by <- reactive(
-        groupby(get.today.flagged.data(), input$type) %>% summarize(n=n())
+    get.flagged.data <- reactive(
+        filter(transaction.data, is_flagged == 'T' )
     )
     
     get.sum.by <- reactive(
-        groupby(get.today.flagged.data(), input$type) %>% summarize(sum=sum(Amount))
+      transaction.data %>% group_by(is_flagged) %>% summarise(.,sum(amount))
     )
     
-    get.date.sum.by <- reactive(
-        groupby(get.today.flagged.data(), crt_dt) %>% summarize(sum=sum(Amount))
-    )
-    
-    get.date.count.by <- reactive(
-        groupby(get.today.flagged.data(), crt_dt) %>% summarize(n=n())
-    )
-    
-
-    
-    output$requestsToday <- renderValueBox({
-        valueBox(
-            nrow(get.today.data()), "Volume Today", icon = icon("list"),
+   
+    output$requestsVol <- renderInfoBox({
+        infoBox(
+            comma(nrow(transaction.data), digits = 2), "Total Volume", icon = icon("list"),
             color = "purple"
         ) 
     })
     
-    output$flaggedToday <- renderValueBox({
-        valueBox(
-            nrow(get.today.flagged.data()), "Volume Flagged Today", icon = icon("list"),
+    output$flaggedVol <- renderInfoBox({
+        infoBox(
+            comma(nrow(get.flagged.data()), digits = 2), "Volume Flagged", icon = icon("list"),
             color = "yellow"
         ) 
     })
     
-    output$percentageToday <- renderValueBox({
-        valueBox(
-            round(nrow(get.today.flagged.data())/nrow(get.today.data()),digits=4), "Flag % Today", icon = icon("list"),
+    output$percentageVol <- renderInfoBox({
+        infoBox(
+            comma(100*round(nrow(get.flagged.data())/nrow(transaction.data),digits=4), digits = 2), "Flag % ", icon = icon("list"),
             color = "blue"
         ) 
     })
     
     
-    output$requestsAll <- renderValueBox({
-        valueBox(
-            sum(get.today.data()), "Value Today", icon = icon("list"),
+    output$requestsVal <- renderInfoBox({
+      infoBox(
+        comma(sum(transaction.data$amount), digits = 2), "Total Value", icon = icon("list"),
             color = "purple"
         ) 
     })
     
-    output$flaggedAll <- renderValueBox({
-        valueBox(
-            sum(get.today.flagged.data()), "Value Flagged Today", icon = icon("list"),
+    output$flaggedVal <- renderInfoBox({
+      infoBox(
+           comma(sum(get.flagged.data()$amount), digits = 2), "Value Flagged", icon = icon("list"),
             color = "yellow"
         ) 
     })
     
-    output$percentageAll <- renderValueBox({
-        valueBox(
-            round(sum(get.today.flagged.data())/sum(get.today.data()),digits=4), "Flag % Today", icon = icon("list"),
+    output$percentageVal <- renderInfoBox({
+      infoBox(
+            comma(round(100*sum(get.flagged.data()$amount)/sum(transaction.data$amount),digits=4), digits = 2), "Flag % Total", icon = icon("list"),
             color = "blue"
         ) 
     })
     
-    
-    output$typePlotValue <- renderPlot({
-            ggplot(get.count.by(),aes(input$type,n)) +
-            geom_bar() + labs(x=input$type,y="Frequency",title=paste('Flagged by ',input$type,sep =" "))
+    output$totalVolumes <- renderPlot({
+      ggplot(transaction.data,aes(is_flagged)) +
+        geom_bar(aes(fill=is_flagged)) + labs(x="Is Flagged",y="Volume",title='Transaction Volumes')
     })
     
-    output$typePlotVolume <- renderPlot({
-        ggplot(get.sum.by(),aes(input$type,sum)) +
-            geom_bar() + labs(x=input$type,y="Amount",title=paste('Flagged by ',input$type,sep =" "))
+    output$totalValues <- renderPlot({
+      ggplot(get.sum.by(),aes(is_flagged)) +
+        geom_bar(aes(fill=is_flagged)) + labs(x="Is Flagged",y="Value",title='Transaction Values')
+    })
+    
+    output$allPlotValue <- renderPlot({
+      if(input$type == 'channel')
+      {
+        data = transaction.data %>% group_by(is_flagged,channel) %>% summarise(.,sum = sum(amount)) 
+        ggplot(data,aes(channel,sum)) +
+          geom_col(aes(fill=channel)) + labs(x=input$type,y="Value",title=paste('Total by ',input$type,sep =" "))
+      } else if  (input$type == 'day')
+      {
+        data = transaction.data %>% group_by(is_flagged,day_of_the_week) %>% summarise(.,sum = sum(amount)) 
+        ggplot(data,aes(day_of_the_week,sum)) +
+          geom_col(aes(fill=day_of_the_week)) + labs(x=input$type,y="Value",title=paste('Total by ',input$type,sep =" "))
+        
+      } else if  (input$type == 'week')
+      {
+        data = transaction.data %>% group_by(is_flagged,week_of_the_month) %>% summarise(.,sum = sum(amount)) 
+        ggplot(data,aes(week_of_the_month,sum)) +
+          geom_col(aes(fill=week_of_the_month)) + labs(x=input$type,y="Value",title=paste('Total by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'tier')
+      {
+        data = transaction.data %>% group_by(is_flagged,tier) %>% summarise(.,sum = sum(amount)) 
+        ggplot(data,aes(tier,sum)) +
+          geom_col(aes(fill=tier)) + labs(x=input$type,y="Value",title=paste('Total by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'cType')
+      {
+        data = transaction.data %>% group_by(is_flagged,customer_type) %>% summarise(.,sum = sum(amount)) 
+        ggplot(data,aes(customer_type,sum)) +
+          geom_col(aes(fill=customer_type)) + labs(x=input$type,y="Value",title=paste('Total by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'bvn')
+      {
+        data = transaction.data %>% group_by(is_flagged,has_bvn) %>% summarise(.,sum = sum(amount)) 
+        ggplot(data,aes(has_bvn,sum)) +
+          geom_col(aes(fill=has_bvn)) + labs(x=input$type,y="Value",title=paste('Total by ',input$type,sep =" "))
+        
+      }
+      
+     
+    })
+    
+    output$allPlotVolume <- renderPlot({
+      if(input$type == 'channel')
+      {
+        data = transaction.data %>% group_by(is_flagged,channel) %>% summarise(.,n = n()) 
+        ggplot(data,aes(channel,n)) +
+          geom_col(aes(fill=channel)) + labs(x=input$type,y="Volume",title=paste('Total by ',input$type,sep =" "))
+      } else if  (input$type == 'day')
+      {
+        data = transaction.data %>% group_by(is_flagged,day_of_the_week) %>% summarise(.,n = n()) 
+        ggplot(data,aes(day_of_the_week,n)) +
+          geom_col(aes(fill=day_of_the_week)) + labs(x=input$type,y="Volume",title=paste('Total by ',input$type,sep =" "))
+        
+      } else if  (input$type == 'week')
+      {
+        data = transaction.data %>% group_by(is_flagged,week_of_the_month) %>% summarise(.,n = n()) 
+        ggplot(data,aes(week_of_the_month,n)) +
+          geom_col(aes(fill=week_of_the_month)) + labs(x=input$type,y="Volume",title=paste('Total by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'tier')
+      {
+        data = transaction.data %>% group_by(is_flagged,tier) %>% summarise(.,n = n()) 
+        ggplot(data,aes(tier,n)) +
+          geom_col(aes(fill=tier)) + labs(x=input$type,y="Volume",title=paste('Total by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'cType')
+      {
+        data = transaction.data %>% group_by(is_flagged,customer_type) %>% summarise(.,n = n()) 
+        ggplot(data,aes(customer_type,n)) +
+          geom_col(aes(fill=customer_type)) + labs(x=input$type,y="Volume",title=paste('Total by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'bvn')
+      {
+        data = transaction.data %>% group_by(is_flagged,has_bvn) %>% summarise(.,n = n()) 
+        ggplot(data,aes(has_bvn,n)) +
+          geom_col(aes(fill=has_bvn)) + labs(x=input$type,y="Volume",title=paste('Total by ',input$type,sep =" "))
+        
+      }
     })
     
     
-    output$trendValue <- renderPlot({
-            ggplot(get.date.count.by(),aes(crt_dt,n)) +
-            geom_line() +
-            labs(x="date",y = "Frequency" ,title='Frequecncy of flagged transactions by date') 
+    output$fraudPlotValue <- renderPlot({
+      if(input$type == 'channel')
+      {
+        data = transaction.data %>% group_by(is_flagged,channel) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='T')
+        ggplot(data,aes(channel,sum)) +
+          geom_col(aes(fill=channel)) + labs(x=input$type,y="Value",title=paste('Flagged by ',input$type,sep =" "))
+      } else if  (input$type == 'day')
+      {
+        data = transaction.data %>% group_by(is_flagged,day_of_the_week) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='T')
+        ggplot(data,aes(day_of_the_week,sum)) +
+          geom_col(aes(fill=day_of_the_week)) + labs(x=input$type,y="Value",title=paste('Flagged by ',input$type,sep =" "))
+        
+      } else if  (input$type == 'week')
+      {
+        data = transaction.data %>% group_by(is_flagged,week_of_the_month) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='T')
+        ggplot(data,aes(week_of_the_month,sum)) +
+          geom_col(aes(fill=week_of_the_month)) + labs(x=input$type,y="Value",title=paste('Flagged by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'tier')
+      {
+        data = transaction.data %>% group_by(is_flagged,tier) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='T')
+        ggplot(data,aes(tier,sum)) +
+          geom_col(aes(fill=tier)) + labs(x=input$type,y="Value",title=paste('Flagged by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'cType')
+      {
+        data = transaction.data %>% group_by(is_flagged,customer_type) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='T')
+        ggplot(data,aes(customer_type,sum)) +
+          geom_col(aes(fill=customer_type)) + labs(x=input$type,y="Value",title=paste('Flagged by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'bvn')
+      {
+        data = transaction.data %>% group_by(is_flagged,has_bvn) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='T')
+        ggplot(data,aes(has_bvn,sum)) +
+          geom_col(aes(fill=has_bvn)) + labs(x=input$type,y="Value",title=paste('Flagged by ',input$type,sep =" "))
+        
+      }
+      
     })
     
-    output$trendVolume <- renderPlot({
-        ggplot(get.date.sum.by(),aes(crt_dt,sum)) +
-            geom_line() +
-            labs(x="date",y = "Amount" ,title='Amount of flagged transactions by date') 
+    output$fraudPlotVolume <- renderPlot({
+      if(input$type == 'channel')
+      {
+        data = transaction.data %>% group_by(is_flagged,channel) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='T')
+        ggplot(data,aes(channel,n)) +
+          geom_col(aes(fill=channel)) + labs(x=input$type,y="Volume",title=paste('Flagged by ',input$type,sep =" "))
+      } else if  (input$type == 'day')
+      {
+        data = transaction.data %>% group_by(is_flagged,day_of_the_week) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='T')
+        ggplot(data,aes(day_of_the_week,n)) +
+          geom_col(aes(fill=day_of_the_week)) + labs(x=input$type,y="Volumr",title=paste('Flagged by ',input$type,sep =" "))
+        
+      } else if  (input$type == 'week')
+      {
+        data = transaction.data %>% group_by(is_flagged,week_of_the_month) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='T')
+        ggplot(data,aes(week_of_the_month,n)) +
+          geom_col(aes(fill=week_of_the_month)) + labs(x=input$type,y="Volume",title=paste('Flagged by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'tier')
+      {
+        data = transaction.data %>% group_by(is_flagged,tier) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='T')
+        ggplot(data,aes(tier,n)) +
+          geom_col(aes(fill=tier)) + labs(x=input$type,y="Volume",title=paste('Flagged by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'cType')
+      {
+        data = transaction.data %>% group_by(is_flagged,customer_type) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='T')
+        ggplot(data,aes(customer_type,n)) +
+          geom_col(aes(fill=customer_type)) + labs(x=input$type,y="Volume",title=paste('Flagged by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'bvn')
+      {
+        data = transaction.data %>% group_by(is_flagged,has_bvn) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='T')
+        ggplot(data,aes(has_bvn,n)) +
+          geom_col(aes(fill=has_bvn)) + labs(x=input$type,y="Volume",title=paste('Flagged by ',input$type,sep =" "))
+        
+      }
+    })
+    
+    output$nofraudPlotValue <- renderPlot({
+      if(input$type == 'channel')
+      {
+        data = transaction.data %>% group_by(is_flagged,channel) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='F')
+        ggplot(data,aes(channel,sum)) +
+          geom_col(aes(fill=channel)) + labs(x=input$type,y="Value",title=paste('Not flagged by ',input$type,sep =" "))
+      } else if  (input$type == 'day')
+      {
+        data = transaction.data %>% group_by(is_flagged,day_of_the_week) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='F')
+        ggplot(data,aes(day_of_the_week,sum)) +
+          geom_col(aes(fill=day_of_the_week)) + labs(x=input$type,y="Value",title=paste('Not flagged by ',input$type,sep =" "))
+        
+      } else if  (input$type == 'week')
+      {
+        data = transaction.data %>% group_by(is_flagged,week_of_the_month) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='F')
+        ggplot(data,aes(week_of_the_month,sum)) +
+          geom_col(aes(fill=week_of_the_month)) + labs(x=input$type,y="Value",title=paste('Not flagged by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'tier')
+      {
+        data = transaction.data %>% group_by(is_flagged,tier) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='F')
+        ggplot(data,aes(tier,sum)) +
+          geom_col(aes(fill=tier)) + labs(x=input$type,y="Value",title=paste('Not flagged by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'cType')
+      {
+        data = transaction.data %>% group_by(is_flagged,customer_type) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='F')
+        ggplot(data,aes(customer_type,sum)) +
+          geom_col(aes(fill=customer_type)) + labs(x=input$type,y="Value",title=paste('Not flagged by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'bvn')
+      {
+        data = transaction.data %>% group_by(is_flagged,has_bvn) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='F')
+        ggplot(data,aes(has_bvn,sum)) +
+          geom_col(aes(fill=has_bvn)) + labs(x=input$type,y="Value",title=paste('Not flagged by ',input$type,sep =" "))
+        
+      }
+    })
+    
+    output$nofraudPlotVolume <- renderPlot({
+      if(input$type == 'channel')
+      {
+        data = transaction.data %>% group_by(is_flagged,channel) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='F')
+        ggplot(data,aes(channel,n)) +
+          geom_col(aes(fill=channel)) + labs(x=input$type,y="Volume",title=paste('Not flagged by ',input$type,sep =" "))
+      } else if  (input$type == 'day')
+      {
+        data = transaction.data %>% group_by(is_flagged,day_of_the_week) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='F')
+        ggplot(data,aes(day_of_the_week,n)) +
+          geom_col(aes(fill=day_of_the_week)) + labs(x=input$type,y="Volume",title=paste('Not flagged by ',input$type,sep =" "))
+        
+      } else if  (input$type == 'week')
+      {
+        data = transaction.data %>% group_by(is_flagged,week_of_the_month) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='F')
+        ggplot(data,aes(week_of_the_month,n)) +
+          geom_col(aes(fill=week_of_the_month)) + labs(x=input$type,y="Volume",title=paste('Not flagged by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'tier')
+      {
+        data = transaction.data %>% group_by(is_flagged,tier) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='F')
+        ggplot(data,aes(tier,n)) +
+          geom_col(aes(fill=tier)) + labs(x=input$type,y="Volume",title=paste('Not flagged by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'cType')
+      {
+        data = transaction.data %>% group_by(is_flagged,customer_type) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='F')
+        ggplot(data,aes(customer_type,n)) +
+          geom_col(aes(fill=customer_type)) + labs(x=input$type,y="Volume",title=paste('Not flagged by ',input$type,sep =" "))
+        
+      }else if  (input$type == 'bvn')
+      {
+        data = transaction.data %>% group_by(is_flagged,has_bvn) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='F')
+        ggplot(data,aes(has_bvn,n)) +
+          geom_col(aes(fill=has_bvn)) + labs(x=input$type,y="Volume",title=paste('Not flagged by ',input$type,sep =" "))
+        
+      }
     })
     
     

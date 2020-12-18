@@ -1,11 +1,16 @@
 # 1. Library
 library(RMySQL)
+library(ggplot2)
+library(flexdashboard)
+library(dplyr)
+library(formattable)
+
 
 # 2. Settings
 db_user <- 'root'
-db_password <- 'fets123.'
-db_name <- 'fddb'
-db_table <- 'transactions'
+db_password <- '1W2w1s500.'
+db_name <- 'aml'
+db_table <- 'transaction'
 db_host <- '127.0.0.1' # for local access
 db_port <- 3306
 
