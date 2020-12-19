@@ -6,15 +6,15 @@ Created on Dec 15, 2020
 import schedule
 import time
 from services import trainService
-class Scheduler(object):
+class Schedule(object):
     '''
-    classdocs
+    This class is responsible for scheduling model training 
     '''
 
 
-    def __init__(self, params):
+    def __init__(self):
         '''
-        Constructor
+        Default training frequency is set at once a week
         '''
         schedule.every(1).week.do(self.__doRun__)
      

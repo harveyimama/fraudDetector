@@ -42,7 +42,9 @@ class Trainer():
         X = data[feature_cols] # Features
         y = data.is_flagged # Target variable
         #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+        print('Training Model............ this should take about 5 minutes')
         self.model.fit(self.__getDummified__(X),y) 
+        print('Getting score............ this should take about 5 minutes')
         print('score is = ')
         print(self.model.score(self.__getDummified__(X),y))
         
@@ -50,6 +52,7 @@ class Trainer():
     def __getData__ (self):
         
         connection = conn.Connect()
+        print('Loading data............ this should take about 15 minutes')
         data = connection.find(self.TRANSACTION,None) 
         connection.closeConnect()
             
@@ -68,6 +71,5 @@ class Trainer():
         tier = pd.get_dummies(X['tier'], prefix='Tier')
        
         model_data = pd.concat((day_of_the_week.drop('Day_Monday',axis=1),time_of_the_day.drop('Time_Business Hours',axis=1),channel.drop('Channel_CONSOLE',axis=1),customer_type.drop('Type_CUSTOMER',axis=1),has_bvn.drop('BVN_N',axis=1),has_address.drop('Addy_N',axis=1),is_key_customer.drop('Key_N',axis=1),has_customer_capabilities.drop('CC_N',axis=1),tier.drop('Tier_1st Tier',axis=1), X[['week_of_the_month','total_debit_so_far' ,'total_credit_so_far','alert_type']]), axis=1)
-        for col in model_data.columns: 
-            print(col) 
+    
         return model_data

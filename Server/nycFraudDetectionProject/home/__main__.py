@@ -8,11 +8,13 @@ from webService import conf
 from consumer import tc
 from persistence import conn
 from services import trainService
+from scheduler import sh
 
 
 if __name__ == '__main__':
     conn.Connect()
     trainService.Trainer()
+    sh.Schedule()
     conf.WSProcessor()
     tc.TransactionConsumer().run()
     

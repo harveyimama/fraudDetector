@@ -232,38 +232,50 @@ shinyServer(function(input, output) {
     output$nofraudPlotValue <- renderPlot({
       if(input$type == 'channel')
       {
-        data = transaction.data %>% group_by(is_flagged,channel) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='F')
+        data_F = transaction.data %>% group_by(is_flagged,channel) %>% summarise(.,a = sum(amount)) %>% filter(.,is_flagged=='F')
+        data_T = transaction.data %>% group_by(channel) %>% summarise(.,b = sum(amount))
+        data = inner_join(data_F,data_T,by="channel") %>% select(channel,sum = (a/b))
         ggplot(data,aes(channel,sum)) +
-          geom_col(aes(fill=channel)) + labs(x=input$type,y="Value",title=paste('Not flagged by ',input$type,sep =" "))
+          geom_col(aes(fill=channel)) + labs(x=input$type,y="Value",title=paste('Ratio by ',input$type,sep =" "))
       } else if  (input$type == 'day')
       {
-        data = transaction.data %>% group_by(is_flagged,day_of_the_week) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='F')
+        data_F = transaction.data %>% group_by(is_flagged,day_of_the_week) %>% summarise(.,a = sum(amount)) %>% filter(.,is_flagged=='F')
+        data_T = transaction.data %>% group_by(day_of_the_week) %>% summarise(.,b = sum(amount)) 
+        data = inner_join(data_F,data_T,by="day_of_the_week") %>% select(day_of_the_week,sum = (a/b))
         ggplot(data,aes(day_of_the_week,sum)) +
-          geom_col(aes(fill=day_of_the_week)) + labs(x=input$type,y="Value",title=paste('Not flagged by ',input$type,sep =" "))
+          geom_col(aes(fill=day_of_the_week)) + labs(x=input$type,y="Value",title=paste('Ratio by ',input$type,sep =" "))
         
       } else if  (input$type == 'week')
       {
-        data = transaction.data %>% group_by(is_flagged,week_of_the_month) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='F')
+        data_F = transaction.data %>% group_by(is_flagged,week_of_the_month) %>% summarise(.,a = sum(amount)) %>% filter(.,is_flagged=='F')
+        data_T = transaction.data %>% group_by(week_of_the_month) %>% summarise(.,b = sum(amount)) 
+        data = inner_join(data_F,data_T,by="week_of_the_month") %>% select(week_of_the_month,sum = (a/b))
         ggplot(data,aes(week_of_the_month,sum)) +
-          geom_col(aes(fill=week_of_the_month)) + labs(x=input$type,y="Value",title=paste('Not flagged by ',input$type,sep =" "))
+          geom_col(aes(fill=week_of_the_month)) + labs(x=input$type,y="Value",title=paste('Ratio by ',input$type,sep =" "))
         
       }else if  (input$type == 'tier')
       {
-        data = transaction.data %>% group_by(is_flagged,tier) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='F')
+        data_F = transaction.data %>% group_by(is_flagged,tier) %>% summarise(.,a = sum(amount)) %>% filter(.,is_flagged=='F')
+        data_T = transaction.data %>% group_by(tier) %>% summarise(.,b = sum(amount))
+        data = inner_join(data_F,data_T,by="tier") %>% select(tier,sum = (a/b))
         ggplot(data,aes(tier,sum)) +
-          geom_col(aes(fill=tier)) + labs(x=input$type,y="Value",title=paste('Not flagged by ',input$type,sep =" "))
+          geom_col(aes(fill=tier)) + labs(x=input$type,y="Value",title=paste('Ratio by ',input$type,sep =" "))
         
       }else if  (input$type == 'cType')
       {
-        data = transaction.data %>% group_by(is_flagged,customer_type) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='F')
+        data_F = transaction.data %>% group_by(is_flagged,customer_type) %>% summarise(.,a = sum(amount)) %>% filter(.,is_flagged=='F')
+        data_T = transaction.data %>% group_by(customer_type) %>% summarise(.,b = sum(amount))
+        data = inner_join(data_F,data_T,by="customer_type") %>% select(customer_type,sum = (a/b))
         ggplot(data,aes(customer_type,sum)) +
-          geom_col(aes(fill=customer_type)) + labs(x=input$type,y="Value",title=paste('Not flagged by ',input$type,sep =" "))
+          geom_col(aes(fill=customer_type)) + labs(x=input$type,y="Value",title=paste('Ratio by ',input$type,sep =" "))
         
       }else if  (input$type == 'bvn')
       {
-        data = transaction.data %>% group_by(is_flagged,has_bvn) %>% summarise(.,sum = sum(amount)) %>% filter(.,is_flagged=='F')
+        data_F = transaction.data %>% group_by(is_flagged,has_bvn) %>% summarise(.,a = sum(amount)) %>% filter(.,is_flagged=='F')
+        data_T = transaction.data %>% group_by(has_bvn) %>% summarise(.,b = sum(amount)) 
+        data = inner_join(data_F,data_T,by="has_bvn") %>% select(has_bvn,sum = (a/b))
         ggplot(data,aes(has_bvn,sum)) +
-          geom_col(aes(fill=has_bvn)) + labs(x=input$type,y="Value",title=paste('Not flagged by ',input$type,sep =" "))
+          geom_col(aes(fill=has_bvn)) + labs(x=input$type,y="Value",title=paste('Ratio by ',input$type,sep =" "))
         
       }
     })
@@ -271,38 +283,52 @@ shinyServer(function(input, output) {
     output$nofraudPlotVolume <- renderPlot({
       if(input$type == 'channel')
       {
-        data = transaction.data %>% group_by(is_flagged,channel) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='F')
+        data_F = transaction.data %>% group_by(is_flagged,channel) %>% summarise(.,a=n()) %>% filter(.,is_flagged=='F')
+        data_T = transaction.data %>% group_by(channel) %>% summarise(.,b=n()) 
+        data = inner_join(data_F,data_T,by="channel") %>% select(channel,n = (a/b))
+        
         ggplot(data,aes(channel,n)) +
-          geom_col(aes(fill=channel)) + labs(x=input$type,y="Volume",title=paste('Not flagged by ',input$type,sep =" "))
+          geom_col(aes(fill=channel)) + labs(x=input$type,y="Volume",title=paste('Ratio by ',input$type,sep =" "))
       } else if  (input$type == 'day')
       {
-        data = transaction.data %>% group_by(is_flagged,day_of_the_week) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='F')
+        data_F = transaction.data %>% group_by(is_flagged,day_of_the_week) %>% summarise(.,a=n()) %>% filter(.,is_flagged=='F')
+        data_T = transaction.data %>% group_by(day_of_the_week) %>% summarise(.,b=n()) 
+        data = inner_join(data_F,data_T,by="day_of_the_week") %>% select(day_of_the_week,n = (a/b))
         ggplot(data,aes(day_of_the_week,n)) +
-          geom_col(aes(fill=day_of_the_week)) + labs(x=input$type,y="Volume",title=paste('Not flagged by ',input$type,sep =" "))
+          geom_col(aes(fill=day_of_the_week)) + labs(x=input$type,y="Volume",title=paste('Ratio by ',input$type,sep =" "))
         
       } else if  (input$type == 'week')
       {
-        data = transaction.data %>% group_by(is_flagged,week_of_the_month) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='F')
-        ggplot(data,aes(week_of_the_month,n)) +
-          geom_col(aes(fill=week_of_the_month)) + labs(x=input$type,y="Volume",title=paste('Not flagged by ',input$type,sep =" "))
+        data_F = transaction.data %>% group_by(is_flagged,week_of_the_month) %>% summarise(.,a=n()) %>% filter(.,is_flagged=='F')
+        data_T = transaction.data %>% group_by(week_of_the_month) %>% summarise(.,b=n()) 
+        data = inner_join(data_F,data_T,by="week_of_the_month") %>% select(week_of_the_month,n = (a/b))
+        
+         ggplot(data,aes(week_of_the_month,n)) +
+          geom_col(aes(fill=week_of_the_month)) + labs(x=input$type,y="Volume",title=paste('Ratio by ',input$type,sep =" "))
         
       }else if  (input$type == 'tier')
       {
-        data = transaction.data %>% group_by(is_flagged,tier) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='F')
-        ggplot(data,aes(tier,n)) +
-          geom_col(aes(fill=tier)) + labs(x=input$type,y="Volume",title=paste('Not flagged by ',input$type,sep =" "))
+        data_F = transaction.data %>% group_by(is_flagged,tier) %>% summarise(.,a=n()) %>% filter(.,is_flagged=='F')
+        data_T = transaction.data %>% group_by(tier) %>% summarise(.,b=n())
+        data = inner_join(data_F,data_T,by="tier") %>% select(tier,n = (a/b))
+         ggplot(data,aes(tier,n)) +
+          geom_col(aes(fill=tier)) + labs(x=input$type,y="Volume",title=paste('Ratio by ',input$type,sep =" "))
         
       }else if  (input$type == 'cType')
       {
-        data = transaction.data %>% group_by(is_flagged,customer_type) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='F')
-        ggplot(data,aes(customer_type,n)) +
-          geom_col(aes(fill=customer_type)) + labs(x=input$type,y="Volume",title=paste('Not flagged by ',input$type,sep =" "))
+        data_F = transaction.data %>% group_by(is_flagged,customer_type) %>% summarise(.,a=n()) %>% filter(.,is_flagged=='F')
+        data_T = transaction.data %>% group_by(customer_type) %>% summarise(.,b=n()) 
+        data = inner_join(data_F,data_T,by="customer_type") %>% select(customer_type,n = (a/b))
+         ggplot(data,aes(customer_type,n)) +
+          geom_col(aes(fill=customer_type)) + labs(x=input$type,y="Volume",title=paste('Ratio by ',input$type,sep =" "))
         
       }else if  (input$type == 'bvn')
       {
-        data = transaction.data %>% group_by(is_flagged,has_bvn) %>% summarise(.,n=n()) %>% filter(.,is_flagged=='F')
+        data_F = transaction.data %>% group_by(is_flagged,has_bvn) %>% summarise(.,a=n()) %>% filter(.,is_flagged=='F')
+        data_T = transaction.data %>% group_by(has_bvn) %>% summarise(.,b=n())
+        data = inner_join(data_F,data_T,by="has_bvn") %>% select(has_bvn,n = (a/b))
         ggplot(data,aes(has_bvn,n)) +
-          geom_col(aes(fill=has_bvn)) + labs(x=input$type,y="Volume",title=paste('Not flagged by ',input$type,sep =" "))
+          geom_col(aes(fill=has_bvn)) + labs(x=input$type,y="Volume",title=paste('Ratio by ',input$type,sep =" "))
         
       }
     })

@@ -16,7 +16,9 @@ import threading
 
 
 class MyWebService(object):
-    
+    '''
+    This class is responsible for receiving transaction request, predicting the outcome and sanding message if transaction is flagged 
+    '''
     TRANSACTION = "transaction"
     
     @cherrypy.expose
@@ -29,7 +31,7 @@ class MyWebService(object):
         outcome = testService.Tester().predictOutcome(df) 
         probs = testService.Tester().getProbablity(df)
         print(probs)
-        
+        #send message thread no need to wait for response
         if outcome == 'T':
             x = threading.Thread(target=self.__sendMessage__, args=(df,probs,)) 
             x.start()

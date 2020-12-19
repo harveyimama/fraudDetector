@@ -6,23 +6,21 @@ Created on Dec 15, 2020
 from messenger import HttpRequester
 class emailMessenger():
     '''
-    classdocs
+    The email messenger is responsible for sending email messages when a transaction  is flagged
     '''
 
 
-    def __init__(self, params):
+    def __init__(self):
         '''
-        Constructor
+        Declare external email gateway service
         '''
         self.url = "http://fetspay.fetswallet.com/rest/sendEmail"
         
     def send(self,data,probs):
         
-        request = 'The Transaction with details below was flagged with score '+probs[0]+':'+probs[1] 
-        
-        for idex in data.index:
-            request = request+str(data[idex])
+        request = 'The Transaction with details below was flagged with score '+str(probs) 
+        request = request+" "+str(data.loc[0,])
         
         print(request)
             
-        HttpRequester.RequestProcessor().process(request)
+        HttpRequester.RequestProcessor(self.url).process(request)

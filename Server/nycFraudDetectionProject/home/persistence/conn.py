@@ -10,13 +10,13 @@ import pandas as pd
 
 class Connect():
     '''
-    classdocs
+    This class is responsible for all interactions with the mysql database
     '''
 
 
     def __init__(self):
         '''
-        Constructor
+        All connection parameters are loaded on Initialization 
         '''
         self.sqlEngine  = create_engine('mysql+pymysql://root:1W2w1s500.@127.0.0.1/aml', pool_recycle=3600)
         self.dbConnection = self.sqlEngine.connect()
