@@ -3,8 +3,8 @@ Created on Dec 15, 2020
 
 @author: Harvey.Imama
 '''
-
-class MyClass(object):
+from messenger import HttpRequester
+class SMSMessenger():
     '''
     classdocs
     '''

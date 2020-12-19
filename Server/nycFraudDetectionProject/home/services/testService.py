@@ -24,7 +24,6 @@ class Tester():
         
         
     def predictOutcome(self,transaction):
-        print(self.__dummify__(transaction))
         return self.model.predict(self.__dummify__(transaction))
     
     def getProbablity(self,transaction):
@@ -37,6 +36,8 @@ class Tester():
          model_data = pd.concat((self.__getDayDum__(t['day_of_the_week']),self.__getBHDum__(t['time_of_the_day']),self.__getCHDum__(t['channel']),self.__getCustDum__(t['customer_type']),self.__getYNDum__(t['has_bvn'], 'BVN'),self.__getYNDum__(t['has_address'], 'Addy'),self.__getYNDum__(t['is_key_customer'], 'Key'),self.__getYNDum__(t['has_customer_capabilities'], 'CC'),self.__getTierDum__(t['tier']) ,t[['week_of_the_month','total_debit_so_far' ,'total_credit_so_far','alert_type']]), axis=1)
          for col in model_data.columns: 
             print(col) 
+            print('==')
+            print(model_data[col])
          return model_data
      
     def __getYNDum__(self,item,pref):

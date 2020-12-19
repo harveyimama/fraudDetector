@@ -43,6 +43,8 @@ class Trainer():
         y = data.is_flagged # Target variable
         #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
         self.model.fit(self.__getDummified__(X),y) 
+        print('score is = ')
+        print(self.model.score(self.__getDummified__(X),y))
         
         
     def __getData__ (self):
@@ -50,6 +52,7 @@ class Trainer():
         connection = conn.Connect()
         data = connection.find(self.TRANSACTION,None) 
         connection.closeConnect()
+            
         return data
        
     def __getDummified__ (self,X):

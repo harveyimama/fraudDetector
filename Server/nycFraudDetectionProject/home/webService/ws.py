@@ -31,7 +31,7 @@ class MyWebService(object):
         print(probs)
         
         if outcome == 'T':
-            x = threading.Thread(target=self.__sendMessage__, args=(df,)) 
+            x = threading.Thread(target=self.__sendMessage__, args=(df,probs,)) 
             x.start()
         df = self. __saveOutcome_(df,outcome)
     
@@ -42,8 +42,8 @@ class MyWebService(object):
         conn.Connect().save(self.TRANSACTION,data)
         return data
         
-    def __sendMessage__(self,data):
-        email.emailMessenger().send(data)
-        sms.SMSMessenger().send(data)
+    def __sendMessage__(self,data,probs):
+        email.emailMessenger().send(data,probs)
+        sms.SMSMessenger().send(data,probs)
 
   
